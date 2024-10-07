@@ -174,3 +174,18 @@ document.getElementById('assessmentForm').addEventListener('submit', function(e)
             // ... (rest of the function)
         });
 }
+
+// ... (your existing JavaScript code)
+
+// Add this section to create the service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('sw.js')
+      .then(function(registration) {
+        console.log('Service Worker registered successfully:', registration);
+      })
+      .catch(function(error) {
+        console.error('Service Worker registration failed:', error);
+      });
+  });
+}
