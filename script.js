@@ -49,8 +49,8 @@ function loadWHOData() {
     const realHeight = parseFloat(document.getElementById('height').value);
 
     const genderPrefix = sex === 'male' ? 'boys' : 'girls';
-    const weightHeightUrl = `/who-mgrs-data/wfh-${genderPrefix}-zscore-expanded-tables.csv`;
-    const heightAgeUrl = `/who-mgrs-data/lhfa-${genderPrefix}-zscore-expanded-tables.csv`;
+    const weightHeightUrl = `https://raw.githubusercontent.com/surajmpatel/PediCalc/main/who-mgrs-data/wfh-${genderPrefix}-zscore-expanded-tables.csv`;
+    const heightAgeUrl = `https://raw.githubusercontent.com/surajmpatel/PediCalc/main/who-mgrs-data/lhfa-${genderPrefix}-zscore-expanded-tables.csv`;
 
     // Load data for weight-for-height and height-for-age
     const loadData = (url) => new Promise((resolve) => {
@@ -160,4 +160,17 @@ document.getElementById('assessmentForm').addEventListener('submit', function(e)
     // Load WHO data and calculate results
     loadWHOData();
     document.getElementById('error').classList.add('hidden');
-});
+});function loadWHOData() {
+    // ... (rest of the function)
+
+    Promise.all([loadData(weightHeightUrl), loadData(heightAgeUrl)])
+        .then(([weightHeightData, heightAgeData]) => {
+            // Find the closest height row in weight-for-height data
+            // ... (this part remains the same)
+
+            // Find the row for the given age in height-for-age data
+            const heightAgeRow = heightAgeData.find(row => parseInt(row.Length) === ageInMonths); // Corrected line
+
+            // ... (rest of the function)
+        });
+}
