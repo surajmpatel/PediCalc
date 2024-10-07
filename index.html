@@ -4,30 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Child Growth Assessment App</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+        }
+        input, button {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #results, #error {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        #results {
+            background-color: #e0e0e0;
+        }
+        #error {
+            background-color: #ffcccc;
+            color: #ff0000;
+        }
+        .footnote {
+            font-size: 0.8em;
+            margin-top: 20px;
+            font-style: italic;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1 class="text-2xl font-bold mb-4">Child Growth Assessment</h1>
         <form id="assessmentForm">
             <div class="flex space-x-2">
-                <div class="w-1/3">
+                <div class="w-1/2">
                     <label for="years">Age (Years):</label>
                     <input type="number" id="years" min="0" max="12" required>
                 </div>
-                <div class="w-1/3">
+                <div class="w-1/2">
                     <label for="months">Months:</label>
                     <input type="number" id="months" min="0" max="11" required>
-                </div>
-                <div class="w-1/3">
-                    <label for="sex">Sex:</label>
-                    <select id="sex" required>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                    </select>
                 </div>
             </div>
             
@@ -39,25 +74,97 @@
             
             <button type="submit">Calculate</button>
         </form>
-        <div id="results" class="results hidden"></div>
-        <div id="whoResults" class="results hidden"></div>
-        <div id="error" class="results hidden"></div>
-        <p class="footnote">Note: The first table uses IAP (Indian Academy of Pediatrics) Classification. The second table uses WHO MGRS data.</p>
+        <div id="results" class="hidden"></div>
+        <div id="error" class="hidden"></div>
+        <p class="footnote">Note: PEM classification used here is based on the IAP (Indian Academy of Pediatrics) Classification.
+        Small experimental project of @SurajMPatel</p>
     </div>
 
-    <script src="script.js"></script>
     <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('sw.js')
-        .then(function(registration) {
-          console.log('Service Worker registered successfully:', registration);
-        })
-        .catch(function(error) {
-          console.error('Service Worker registration failed:', error);
+        function calculateEstimatedHeight(ageInMonths) {
+            if (ageInMonths < 12) {
+                return 2 * ageInMonths + 50;
+            } else if (ageInMonths < 24) {
+                return 75 + (ageInMonths - 12);
+            } else {
+                return 6 * (ageInMonths / 12) + 77;
+            }
+        }
+
+        function calculateEstimatedWeight(ageInMonths) {
+            if (ageInMonths < 3) {
+                return ageInMonths + 3; // Simplified estimation for 0-2 months
+            } else if (ageInMonths < 12) {
+                return (ageInMonths + 9) / 2;
+            } else if (ageInMonths < 72) {
+                return 2 * (ageInMonths / 12) + 8;
+            } else {
+                return (7 * (ageInMonths / 12) - 5) / 2;
+            }
+        }
+
+        function classifyPEM(percentage) {
+            if (percentage > 80) return "No PEM";
+            if (percentage > 70) return "Mild PEM (G1)";
+            if (percentage > 60) return "Moderate PEM (G2)";
+            return "Severe PEM (G3)";
+        }
+
+        function classifyStunting(percentage) {
+            if (percentage > 95) return "No stunting";
+            if (percentage > 90) return "Mild";
+            if (percentage > 85) return "Moderate";
+            return "Severe";
+        }
+
+        document.getElementById('assessmentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const years = parseInt(document.getElementById('years').value);
+            const months = parseInt(document.getElementById('months').value);
+            const ageInMonths = years * 12 + months;
+            const realWeight = parseFloat(document.getElementById('weight').value);
+            const realHeight = parseFloat(document.getElementById('height').value);
+
+            console.log('Age in months:', ageInMonths);
+            console.log('Real weight:', realWeight);
+            console.log('Real height:', realHeight);
+
+            const estimatedHeight = calculateEstimatedHeight(ageInMonths);
+            const estimatedWeight = calculateEstimatedWeight(ageInMonths);
+
+            console.log('Estimated height:', estimatedHeight);
+            console.log('Estimated weight:', estimatedWeight);
+
+            if (estimatedWeight === null || estimatedHeight === null) {
+                document.getElementById('error').innerHTML = 'Error: Unable to calculate for the given age. Please ensure the age is between 0 and 12 years.';
+                document.getElementById('error').classList.remove('hidden');
+                document.getElementById('results').classList.add('hidden');
+                return;
+            }
+
+            const weightPercentage = (realWeight / estimatedWeight) * 100;
+            const heightPercentage = (realHeight / estimatedHeight) * 100;
+
+            console.log('Weight percentage:', weightPercentage);
+            console.log('Height percentage:', heightPercentage);
+
+            const pemClassification = classifyPEM(weightPercentage);
+            const stuntingClassification = classifyStunting(heightPercentage);
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <h2 class="text-xl font-semibold mb-2">Results:</h2>
+                <p>Age: ${years} years and ${months} months</p>
+                <p>Estimated Height: ${estimatedHeight.toFixed(2)} cm</p>
+                <p>Estimated Weight: ${estimatedWeight.toFixed(2)} kg</p>
+                <p>Weight Percentage: ${weightPercentage.toFixed(2)}%</p>
+                <p>Height Percentage: ${heightPercentage.toFixed(2)}%</p>
+                <p>PEM Classification: ${pemClassification}</p>
+                <p>Stunting Classification: ${stuntingClassification}</p>
+            `;
+            resultsDiv.classList.remove('hidden');
+            document.getElementById('error').classList.add('hidden');
         });
-    });
-  }
-</script>
+    </script>
 </body>
 </html>
