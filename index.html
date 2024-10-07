@@ -6,6 +6,7 @@
     <title>Child Growth Assessment App</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -45,5 +46,18 @@
     </div>
 
     <script src="script.js"></script>
+    <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('sw.js')
+        .then(function(registration) {
+          console.log('Service Worker registered successfully:', registration);
+        })
+        .catch(function(error) {
+          console.error('Service Worker registration failed:', error);
+        });
+    });
+  }
+</script>
 </body>
 </html>
