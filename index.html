@@ -5,67 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Child Growth Assessment App</title>
     <link rel="manifest" href="manifest.json">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
             padding: 20px;
         }
         .container {
             max-width: 500px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f0f0f0;
+            background-color: white;
             border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
-        input, button {
-            width: 100%;
-            padding: 8px;
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        label {
+            margin-top: 10px;
+            display: block;
+            font-weight: 500;
+        }
+        input {
+            width: calc(100% - 16px);
+            padding: 10px;
             margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
         }
         button {
-            background-color: #4CAF50;
+            width: 100%;
+            padding: 10px;
+            background-color: #6200ea;
             color: white;
             border: none;
+            border-radius: 4px;
             cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
         }
         button:hover {
-            background-color: #45a049;
+            background-color: #3700b3;
         }
         #results, #error {
             margin-top: 20px;
             padding: 10px;
             border-radius: 4px;
+            display: none;
         }
         #results {
-            background-color: #e0e0e0;
+            background-color: #e0f7fa;
+            border-left: 4px solid #00796b;
         }
         #error {
-            background-color: #ffcccc;
-            color: #ff0000;
+            background-color: #ffebee;
+            border-left: 4px solid #e53935;
+            color: #e53935;
         }
         .footnote {
             font-size: 0.8em;
             margin-top: 20px;
             font-style: italic;
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="text-2xl font-bold mb-4">Child Growth Assessment</h1>
+        <h1>Child Growth Assessment</h1>
         <form id="assessmentForm">
-            <div class="flex space-x-2">
-                <div class="w-1/2">
-                    <label for="years">Age (Years):</label>
-                    <input type="number" id="years" min="0" max="12" required>
-                </div>
-                <div class="w-1/2">
-                    <label for="months">Months:</label>
-                    <input type="number" id="months" min="0" max="11" required>
-                </div>
-            </div>
+            <label for="years">Age (Years):</label>
+            <input type="number" id="years" min="0" max="12" required>
+            
+            <label for="months">Months:</label>
+            <input type="number" id="months" min="0" max="11" required>
             
             <label for="weight">Weight (kg):</label>
             <input type="number" id="weight" step="0.1" required>
@@ -75,10 +93,9 @@
             
             <button type="submit">Calculate</button>
         </form>
-        <div id="results" class="hidden"></div>
-        <div id="error" class="hidden"></div>
-        <p class="footnote">Note: PEM classification used here is based on the IAP (Indian Academy of Pediatrics) Classification.
-        Small experimental project of @SurajMPatel</p>
+        <div id="results"></div>
+        <div id="error"></div>
+        <p class="footnote">Note: PEM classification used here is based on the IAP (Indian Academy of Pediatrics) Classification. Small experimental project of @SurajMPatel</p>
     </div>
 
     <script>
@@ -126,35 +143,18 @@
             const realWeight = parseFloat(document.getElementById('weight').value);
             const realHeight = parseFloat(document.getElementById('height').value);
 
-            console.log('Age in months:', ageInMonths);
-            console.log('Real weight:', realWeight);
-            console.log('Real height:', realHeight);
-
             const estimatedHeight = calculateEstimatedHeight(ageInMonths);
             const estimatedWeight = calculateEstimatedWeight(ageInMonths);
 
-            console.log('Estimated height:', estimatedHeight);
-            console.log('Estimated weight:', estimatedWeight);
-
-            if (estimatedWeight === null || estimatedHeight === null) {
-                document.getElementById('error').innerHTML = 'Error: Unable to calculate for the given age. Please ensure the age is between 0 and 12 years.';
-                document.getElementById('error').classList.remove('hidden');
-                document.getElementById('results').classList.add('hidden');
-                return;
-            }
-
             const weightPercentage = (realWeight / estimatedWeight) * 100;
             const heightPercentage = (realHeight / estimatedHeight) * 100;
-
-            console.log('Weight percentage:', weightPercentage);
-            console.log('Height percentage:', heightPercentage);
 
             const pemClassification = classifyPEM(weightPercentage);
             const stuntingClassification = classifyStunting(heightPercentage);
 
             const resultsDiv = document.getElementById('results');
             resultsDiv.innerHTML = `
-                <h2 class="text-xl font-semibold mb-2">Results:</h2>
+                <h2>Results:</h2>
                 <p>Age: ${years} years and ${months} months</p>
                 <p>Estimated Height: ${estimatedHeight.toFixed(2)} cm</p>
                 <p>Estimated Weight: ${estimatedWeight.toFixed(2)} kg</p>
@@ -163,21 +163,9 @@
                 <p>PEM Classification: ${pemClassification}</p>
                 <p>Stunting Classification: ${stuntingClassification}</p>
             `;
-            resultsDiv.classList.remove('hidden');
-            document.getElementById('error').classList.add('hidden');
+            resultsDiv.style.display = 'block';
+            document.getElementById('error').style.display = 'none';
         });
-
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('service-worker.js')
-                .then((registration) => {
-                    console.log('Service Worker registered with scope:', registration.scope);
-                })
-                .catch((error) => {
-                    console.error('Service Worker registration failed:', error);
-                });
-        });
-    }        
     </script>
 </body>
 </html>
