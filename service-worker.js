@@ -3,6 +3,7 @@ const urlsToCache = [
   'index.html',
   'manifest.json',
   '/index.html',
+  '/PediCalcData.pdf', // Add this line
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
